@@ -1,0 +1,23 @@
+package io.diplom.dto.person.input
+
+import io.diplom.models.UserEntity
+import io.diplom.models.application.policy.AbstractApplicationEntity
+import io.diplom.models.application.policy.CascoApplicationEntity
+import io.diplom.models.dictionary.Car
+
+data class CascoApplicationInput(
+    override val person: Long,
+    override val periodic: AbstractApplicationEntity.Periodic,
+    val num: String,
+    val car: Long
+) : AbstractApplicationInput<CascoApplicationEntity>() {
+
+    fun toEntity(person: UserEntity, car: Car, kbm: Double): CascoApplicationEntity =
+        CascoApplicationEntity(
+            modelAuto = car,
+            kbm = kbm,
+            numAuto = num,
+        ).apply { this.person = person }
+
+
+}
