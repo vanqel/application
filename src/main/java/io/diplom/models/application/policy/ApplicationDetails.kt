@@ -8,6 +8,7 @@ import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
+import kotlin.reflect.KClass
 
 @Entity
 @Table("application_details")
@@ -15,6 +16,9 @@ class ApplicationDetails(
     @Enumerated(value = EnumType.STRING)
     val type: Type
 ) : LongEntity() {
+
+    @Transient
+    val typeText: String = type.description
 
     @ManyToOne
     var worker: UserEntity? = null
@@ -32,12 +36,11 @@ class ApplicationDetails(
     @Enumerated(value = EnumType.STRING)
     var status: Statuses = Statuses.PENDING
 
-
     enum class Statuses {
         PENDING, IN_ANALYZE, SUCCESS, BREAK, WAIT_PAYMENT, EXPIRED
     }
 
-    enum class Type(val description: String) {
-        CASCO("КАСКО"), HOUSE("СТРАХОВАНИЕ НЕДВИЖИМОСТИ"), OSAGO("ОСАГО")
+    enum class Type(val description: String, val parent: KClass<*>) {
+        CASCO("КАСКО", CascoApplicationEntity::class), HOUSE("СТРАХОВАНИЕ НЕДВИЖИМОСТИ", HouseApplicationEntity::class)
     }
 }

@@ -3,11 +3,10 @@ package io.diplom.services.application.policy
 import com.linecorp.kotlinjdsl.dsl.jpql.jpql
 import io.diplom.config.JpqlEntityManager
 import io.diplom.dto.person.input.CascoApplicationInput
-import io.diplom.models.UserEntity
 import io.diplom.models.application.policy.ApplicationDetails
 import io.diplom.models.application.policy.CascoApplicationEntity
 import io.diplom.models.dictionary.Car
-import io.diplom.security.configurator.getUser
+import io.diplom.repository.user.UserRepository
 import io.quarkus.security.identity.SecurityIdentity
 import io.smallrye.mutiny.Uni
 import jakarta.enterprise.context.ApplicationScoped
@@ -15,10 +14,24 @@ import jakarta.enterprise.context.ApplicationScoped
 @ApplicationScoped
 class CasccoRegisterService(
     val securityIdentity: SecurityIdentity,
-    val jpqlExecutor: JpqlEntityManager
+    val jpqlExecutor: JpqlEntityManager,
+    val userRepository: UserRepository
 ) {
 
-    fun getListForWorker() {
+    fun getListCascoForUser() =
+        userRepository.getUser().flatMap { u ->
+            jpqlExecutor.JpqlQuery().getQuery(
+                jpql {
+                    val casco = entity(CascoApplicationEntity::class)
+                    select(casco.toExpression())
+                        .from(casco)
+                        .where(casco.path(CascoApplicationEntity::person).eq(u))
+                }
+            ).flatMap { query -> query.resultList }
+        }
+
+
+    fun getListForWorker() =
         jpqlExecutor.JpqlQuery().getQuery(
             jpql {
                 val casco = entity(CascoApplicationEntity::class)
@@ -26,21 +39,11 @@ class CasccoRegisterService(
                     .from(casco)
             }
         ).flatMap { query -> query.resultList }
-    }
+
 
     fun registerApplication(input: CascoApplicationInput): Uni<CascoApplicationEntity> {
 
-        val userSecurity = securityIdentity.getUser()
-
-        val user = jpqlExecutor.JpqlQuery().getQuery(
-            jpql {
-                val userEntity = entity(UserEntity::class)
-                select(userEntity.toExpression())
-                    .from(userEntity)
-                    .where(userEntity.path(UserEntity::id).eq(userSecurity.id))
-            }
-        ).flatMap { query -> query.singleResult }
-
+        val user = userRepository.getUser()
 
         val car = jpqlExecutor.JpqlQuery().getQuery(
 
@@ -75,10 +78,8 @@ class CasccoRegisterService(
                 .apply { this.details = details }
 
             jpqlExecutor.JpqlQuery().openSession().flatMap { it.merge(casco) }
-        }.flatMap { e ->
-            e.details.serial = "CASCO-${(Math.random() * 500).toInt()}"
-            e.details.num = "0010${e.id}${(Math.random() * 89999 + 10000).toInt()}"
-            jpqlExecutor.JpqlQuery().openSession().flatMap { it.merge(e) }
+        }.map(CascoApplicationEntity::setSerialNum).flatMap { e ->
+            jpqlExecutor.JpqlQuery().openSession().flatMap { it.merge(e as CascoApplicationEntity) }
         }
     }
 }

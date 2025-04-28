@@ -1,5 +1,4 @@
 import jdk.tools.jlink.resources.plugins
-import org.jetbrains.kotlin.gradle.targets.js.npm.importedPackageDir
 
 plugins {
     kotlin("jvm") version "2.0.21"

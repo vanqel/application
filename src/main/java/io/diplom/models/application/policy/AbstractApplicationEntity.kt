@@ -10,11 +10,12 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.MappedSuperclass
+import sun.jvm.hotspot.HelloWorld.e
 import java.time.LocalDateTime
 import java.util.*
 
 @MappedSuperclass
-abstract class AbstractApplicationEntity {
+sealed class AbstractApplicationEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -50,5 +51,11 @@ abstract class AbstractApplicationEntity {
 
         fun calculate(date: LocalDateTime) =
             date.plusMonths(this.months)
+    }
+
+    fun setSerialNum(): AbstractApplicationEntity {
+        details.serial = "${details.type.name}-${(Math.random() * 500).toInt()}"
+        details.num = "0010${id}${(Math.random() * 89999 + 10000).toInt()}"
+        return this
     }
 }
