@@ -10,7 +10,6 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.MappedSuperclass
-import sun.jvm.hotspot.HelloWorld.e
 import java.time.LocalDateTime
 import java.util.*
 
@@ -33,7 +32,8 @@ sealed class AbstractApplicationEntity {
     var periodic: Periodic? = null
 
     @Column(name = "end_date", nullable = false)
-    var endDate: LocalDateTime = periodic!!.calculate(startDate)
+    var endDate: LocalDateTime? = null
+        get() = periodic!!.calculate(startDate)
 
     @Column(name = "cost", nullable = false)
     var cost: Double? = null

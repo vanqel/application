@@ -11,10 +11,10 @@ import jakarta.persistence.Table
 import kotlin.reflect.KClass
 
 @Entity
-@Table("application_details")
+@Table(name = "application_details")
 class ApplicationDetails(
     @Enumerated(value = EnumType.STRING)
-    val type: Type
+    val type: Type = Type.NOTHING
 ) : LongEntity() {
 
     @Transient
@@ -41,6 +41,6 @@ class ApplicationDetails(
     }
 
     enum class Type(val description: String, val parent: KClass<*>) {
-        CASCO("КАСКО", CascoApplicationEntity::class), HOUSE("СТРАХОВАНИЕ НЕДВИЖИМОСТИ", HouseApplicationEntity::class)
+        NOTHING("NOTHING", String::class), CASCO("КАСКО", CascoApplicationEntity::class), HOUSE("СТРАХОВАНИЕ НЕДВИЖИМОСТИ", HouseApplicationEntity::class)
     }
 }

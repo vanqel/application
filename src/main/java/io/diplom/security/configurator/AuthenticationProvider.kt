@@ -75,7 +75,7 @@ class AuthenticationProvider(
             }.map { user1 ->
                 QuarkusSecurityIdentity.builder()
                     .setPrincipal(user1)
-                    .addRoles(user1.authorities.map { it.name.name }.toMutableSet())
+                    .addRoles(user1.roles.map { it.name.name }.toMutableSet())
                     .build()
             }
     }

@@ -8,34 +8,36 @@ import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
+import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
+import jakarta.persistence.Table
 
 @Entity
+@Table(name = "payment")
 class PaymentEntity(
 
-    @Column(name = "refer")
     @ManyToOne
-    val refer: UserEntity,
+    @JoinColumn(name = "refer", nullable = false)
+    val refer: UserEntity? = null,
 
-    @Column(name = "checksumm")
-    val checkSumm: String,
+    @Column(name = "checksumm", nullable = false)
+    val checkSumm: String? = null,
 
     @ManyToOne
-    @Column(name = "detailsId")
-    val applicationDetails: ApplicationDetails,
+    @JoinColumn(name = "detailsId", nullable = false)
+    val applicationDetails: ApplicationDetails? = null,
 
-    @Column(name = "cost")
-    val cost: Double,
+    @Column(name = "cost", nullable = false)
+    val cost: Double? = null,
 
-    @Column(name = "inv_id")
-    val invoiceId: Int,
+    @Column(name = "inv_id", nullable = false)
+    val invoiceId: Int? = null,
+
+    @Column(name = "url", nullable = false)
+    var url: String? = null,
 
     @Enumerated(value = EnumType.STRING)
-    @Column(name = "url")
-    var url: String,
-
-    @Enumerated(value = EnumType.STRING)
-    @Column(name = "status")
+    @Column(name = "status", nullable = false)
     var status: Status = Status.WAIT
 
 ) : LongEntity() {
@@ -44,11 +46,11 @@ class PaymentEntity(
     }
 
     fun toDTO() = PaymentOutput(
-        refer,
-        applicationDetails,
-        cost,
-        invoiceId,
-        url,
+        refer!!,
+        applicationDetails!!,
+        cost!!,
+        invoiceId!!,
+        url!!,
         status
     )
 }

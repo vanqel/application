@@ -3,6 +3,7 @@ package io.diplom.services.application.payment
 import com.linecorp.kotlinjdsl.dsl.jpql.jpql
 import io.diplom.config.JpqlEntityManager
 import io.diplom.config.RobokassaProps
+import io.diplom.dto.payment.PaymentInput
 import io.diplom.dto.person.output.PaymentOutput
 import io.diplom.exception.GeneralException
 import io.diplom.models.UserEntity
@@ -113,13 +114,14 @@ class RobokassaService(
         return invId
     }
 
-    fun succ(outSum: Double, invId: Int, signatureValue: String): Uni<PaymentOutput> =
+    fun success(body: PaymentInput) = succ(body.OutSum, body.InvId, body.SignatureValue)
+    private fun succ(outSum: Double, invId: Int, signatureValue: String): Uni<PaymentOutput> =
         verify(outSum, invId, signatureValue)
             .let {
                 repository.ok(invId)
             }
             .map {
-                it.applicationDetails.status = ApplicationDetails.Statuses.SUCCESS
+                it.applicationDetails!!.status = ApplicationDetails.Statuses.SUCCESS
                 it
             }
             .flatMap {
@@ -134,7 +136,7 @@ class RobokassaService(
                 repository.err(invId)
             }
             .map {
-                it.applicationDetails.status = ApplicationDetails.Statuses.WAIT_PAYMENT
+                it.applicationDetails!!.status = ApplicationDetails.Statuses.WAIT_PAYMENT
                 it
             }
             .flatMap {

@@ -20,4 +20,14 @@ data class HouseApplicationProcessInput(
     /** Оплата в месяц */
     val monthCost: Double? = null
 
-)
+){
+
+    fun processEntity(entity: HouseApplicationEntity): HouseApplicationEntity =
+        entity.apply {
+            this.finishingCost = finishingCost
+            this.structuralElCost = structuralElCost
+            this.neighborsCost = neighborsCost
+            this.household = household
+            this.monthCost = monthCost
+        }
+}

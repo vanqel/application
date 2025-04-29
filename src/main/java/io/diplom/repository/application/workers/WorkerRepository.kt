@@ -11,7 +11,7 @@ class WorkerRepository(
 ) {
 
 
-    fun takeForAnalyze(detailsId: Long) = ojpqlEntityManager.JpqlQuery().getQuery(
+    fun takeForAnalyze(detailsId: Long) = jpqlEntityManager.JpqlQuery().getQuery(
         jpql {
             val details = entity(ApplicationDetails::class)
             select(details.toExpression())

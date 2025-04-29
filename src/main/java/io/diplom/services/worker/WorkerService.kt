@@ -2,7 +2,6 @@ package io.diplom.services.worker
 
 import com.linecorp.kotlinjdsl.dsl.jpql.jpql
 import io.diplom.config.JpqlEntityManager
-import io.diplom.models.application.policy.AbstractApplicationEntity
 import io.diplom.models.application.policy.ApplicationDetails
 import io.diplom.repository.user.UserRepository
 import jakarta.enterprise.context.ApplicationScoped
@@ -13,9 +12,19 @@ class WorkerService(
     val userRepository: UserRepository
 ) {
 
-    fun takeApplicationForAnalyze(detailsId: Int) {
+    fun takeApplicationForAnalyze(detailsId: Int) = jpqlExecutor.JpqlQuery().getQuery(
+        jpql {
+            val details = entity(ApplicationDetails::class)
+            select(details.toExpression())
+                .from(details)
+                .where(details.path(ApplicationDetails::id).eq(detailsId.toLong()))
+        }
+    ).flatMap { query -> query.singleResult }
+        .flatMap { details ->
+            details.status = ApplicationDetails.Statuses.IN_ANALYZE
+            jpqlExecutor.save(details)
+        }
 
-    }
 
     fun getListForWorker(type: ApplicationDetails.Type) =
         jpqlExecutor.JpqlQuery().getQuery(

@@ -7,18 +7,17 @@ import io.diplom.models.application.policy.ApplicationDetails
 import io.diplom.models.application.policy.CascoApplicationEntity
 import io.diplom.models.dictionary.Car
 import io.diplom.repository.user.UserRepository
-import io.quarkus.security.identity.SecurityIdentity
 import io.smallrye.mutiny.Uni
 import jakarta.enterprise.context.ApplicationScoped
+import java.util.UUID
 
 @ApplicationScoped
-class CasccoRegisterService(
-    val securityIdentity: SecurityIdentity,
+class CascoRegisterService(
     val jpqlExecutor: JpqlEntityManager,
     val userRepository: UserRepository
-) {
+) : PolicyService<CascoApplicationEntity, CascoApplicationInput, Nothing> {
 
-    fun getListCascoForUser() =
+    override fun policyForUser() =
         userRepository.getUser().flatMap { u ->
             jpqlExecutor.JpqlQuery().getQuery(
                 jpql {
@@ -30,18 +29,21 @@ class CasccoRegisterService(
             ).flatMap { query -> query.resultList }
         }
 
+    override fun deleteApplication(id: UUID): Uni<Boolean> {
+        return jpqlExecutor.JpqlQuery().getQuery(
 
-    fun getListForWorker() =
-        jpqlExecutor.JpqlQuery().getQuery(
             jpql {
                 val casco = entity(CascoApplicationEntity::class)
                 select(casco.toExpression())
                     .from(casco)
+                    .where(casco.path(CascoApplicationEntity::id).eq(id))
             }
-        ).flatMap { query -> query.resultList }
+        ).flatMap { it.singleResult }.flatMap {
+            jpqlExecutor.delete(it)
+        }
+    }
 
-
-    fun registerApplication(input: CascoApplicationInput): Uni<CascoApplicationEntity> {
+    override fun registerApplication(input: CascoApplicationInput): Uni<CascoApplicationEntity> {
 
         val user = userRepository.getUser()
 
@@ -82,4 +84,11 @@ class CasccoRegisterService(
             jpqlExecutor.JpqlQuery().openSession().flatMap { it.merge(e as CascoApplicationEntity) }
         }
     }
+
+    override fun processApplication(
+        id: UUID,
+        obj: Nothing,
+        status: ApplicationDetails.Statuses
+    ): Uni<CascoApplicationEntity> = throw NotImplementedError()
+
 }

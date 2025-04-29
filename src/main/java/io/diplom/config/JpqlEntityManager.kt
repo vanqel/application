@@ -28,6 +28,11 @@ final class JpqlEntityManager(
 
     fun <T : Any> save(obj: T) = entityManager.openSession().flatMap { it.merge(obj) }
 
+    fun <T : Any> delete(obj: T) =
+        entityManager.openSession().flatMap { it.remove(obj) }
+            .map { true }
+            .onFailure()
+            .recoverWithItem(false)
 
     inner class JpqlQuery {
 
@@ -77,7 +82,7 @@ final class JpqlEntityManager(
                     .apply { render.params.forEach { (name, value) -> setParameter(name, value) } }
                     .pagination(pagination)
                     .resultList
-            }
+            }.map { it.filterNotNull() }
 
         }
 
@@ -100,7 +105,7 @@ final class JpqlEntityManager(
                     .apply { render.params.forEach { (name, value) -> setParameter(name, value) } }
                     .pagination(pagination)
                     .resultList
-            }
+            }.map { it.filterNotNull() }
 
         }
 

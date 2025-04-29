@@ -1,20 +1,24 @@
 package io.diplom.models.application.policy
 
 import io.diplom.models.dictionary.Car
+import jakarta.persistence.Column
 import jakarta.persistence.Entity
+import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 
 @Entity
 @Table(name = "casco_application")
 class CascoApplicationEntity(
-
-    val kbm: Double,
+    @Column(name = "kbm")
+    val kbm: Double = 1.0,
 
     @ManyToOne
-    val modelAuto: Car,
+    @JoinColumn(name = "car")
+    val modelAuto: Car? = null,
 
-    val numAuto: String
+    @Column(name = "autonum")
+    val numAuto: String? = null
 ) : AbstractApplicationEntity() {
 
     override fun getType(): ApplicationDetails.Type = ApplicationDetails.Type.CASCO
