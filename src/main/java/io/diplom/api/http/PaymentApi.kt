@@ -34,5 +34,14 @@ class PaymentApi(
         @Body body: PaymentInput
     ) = robokassaService.success(body)
 
+    @Route(
+        path = "/failure",
+        methods = [Route.HttpMethod.POST],
+        consumes = [MediaType.APPLICATION_JSON]
+    )
+    fun failure(
+        @Body body: PaymentInput
+    ) = robokassaService.failure(body)
+
 
 }

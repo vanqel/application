@@ -1,4 +1,4 @@
-package io.diplom.dto.worker.input
+package io.diplom.dto.worker
 
 import io.diplom.models.UserEntity
 import io.diplom.models.application.policy.HouseApplicationEntity
@@ -18,7 +18,12 @@ data class HouseApplicationProcessInput(
     val household: Double? = null,
 
     /** Оплата в месяц */
-    val monthCost: Double? = null
+    val monthCost: Double? = null,
+
+    /**
+     * ЕГРН номер
+     */
+    val egrn: String? = null
 
 ){
 
@@ -29,5 +34,6 @@ data class HouseApplicationProcessInput(
             this.neighborsCost = neighborsCost
             this.household = household
             this.monthCost = monthCost
+            this.egrn = egrn
         }
 }

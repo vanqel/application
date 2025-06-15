@@ -1,6 +1,6 @@
 package io.diplom.security.filters
 
-import io.diplom.config.HttpConfig
+import io.diplom.config.http.HttpConfig
 import io.diplom.security.configurator.AuthenticationFilter
 import io.diplom.security.models.User
 import io.smallrye.mutiny.Uni

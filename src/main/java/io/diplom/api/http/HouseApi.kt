@@ -1,7 +1,7 @@
 package io.diplom.api.http
 
-import io.diplom.dto.person.input.HouseApplicationInput
-import io.diplom.dto.worker.input.HouseApplicationProcessInput
+import io.diplom.dto.policy.input.HouseApplicationInput
+import io.diplom.dto.worker.HouseApplicationProcessInput
 import io.diplom.models.application.policy.ApplicationDetails
 import io.diplom.services.application.policy.HouseRegisterService
 import io.quarkus.vertx.web.Body

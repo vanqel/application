@@ -1,20 +1,19 @@
 package io.diplom.security.models
 
+import io.diplom.models.PersonDocuments
+import java.time.LocalDate
+
 data class PersonEntity(
 
     val id: Int,
 
-    var extId: Int,
+    val name: String,
 
-    val snils: String,
+    val surname: String,
 
-    val passportSerial: String,
+    val secondName: String,
 
-    val passportNumber: String,
+    val birthDate: LocalDate,
 
-    val firstName: String,
-
-    val lastName: String,
-
-    val secondName: String?
+    val documents: List<PersonDocuments>
 )

@@ -1,23 +1,37 @@
 package io.diplom.services.application.policy
 
 import com.linecorp.kotlinjdsl.dsl.jpql.jpql
-import io.diplom.config.JpqlEntityManager
-import io.diplom.dto.person.input.CascoApplicationInput
+import com.linecorp.kotlinjdsl.querymodel.jpql.entity.Entities.entity
+import io.diplom.config.jpql.JpqlEntityManager
+import io.diplom.config.jpql.PaginationInput
+import io.diplom.dto.file.FileOutput
+import io.diplom.dto.policy.input.CascoApplicationInput
+import io.diplom.dto.policy.output.CascoOutput
+import io.diplom.dto.policy.output.HouseOutput
+import io.diplom.dto.worker.CascoApplicationProcessInput
 import io.diplom.models.application.policy.ApplicationDetails
 import io.diplom.models.application.policy.CascoApplicationEntity
 import io.diplom.models.dictionary.Car
 import io.diplom.repository.user.UserRepository
+import io.diplom.services.application.files.AdditionalDocumentService
 import io.smallrye.mutiny.Uni
+import io.vertx.ext.web.FileUpload
 import jakarta.enterprise.context.ApplicationScoped
-import java.util.UUID
+import java.util.*
 
 @ApplicationScoped
 class CascoRegisterService(
     val jpqlExecutor: JpqlEntityManager,
-    val userRepository: UserRepository
-) : PolicyService<CascoApplicationEntity, CascoApplicationInput, Nothing> {
+    val userRepository: UserRepository,
+    val files: AdditionalDocumentService
+) : PolicyService<CascoApplicationEntity, CascoOutput, CascoApplicationInput, CascoApplicationProcessInput> {
 
-    override fun policyForUser() =
+
+    companion object {
+        val entity = entity(CascoApplicationEntity::class)
+    }
+
+    override fun policyForUser(): Uni<List<CascoOutput>> =
         userRepository.getUser().flatMap { u ->
             jpqlExecutor.JpqlQuery().getQuery(
                 jpql {
@@ -27,7 +41,7 @@ class CascoRegisterService(
                         .where(casco.path(CascoApplicationEntity::person).eq(u))
                 }
             ).flatMap { query -> query.resultList }
-        }
+        }.flatMap(this::wrap)
 
     override fun deleteApplication(id: UUID): Uni<Boolean> {
         return jpqlExecutor.JpqlQuery().getQuery(
@@ -43,12 +57,17 @@ class CascoRegisterService(
         }
     }
 
-    override fun registerApplication(input: CascoApplicationInput): Uni<CascoApplicationEntity> {
+    override fun lincDocs(
+        id: UUID,
+        docs: List<FileUpload>
+    ): Uni<List<FileOutput>> = files.putObjectsByApplication(id, docs)
+
+
+    override fun registerApplication(input: CascoApplicationInput): Uni<CascoOutput> {
 
         val user = userRepository.getUser()
 
         val car = jpqlExecutor.JpqlQuery().getQuery(
-
             jpql {
                 val car = entity(Car::class)
                 select(car.toExpression())
@@ -56,12 +75,6 @@ class CascoRegisterService(
                     .where(car.path(Car::id).eq(input.car))
             }
         ).flatMap { it.singleResult }
-
-        /**
-         * TODO(API)
-         */
-        val kbm = 1.0
-
 
         return Uni.combine().all().unis(user, car).asTuple().flatMap { tuple ->
 
@@ -73,22 +86,72 @@ class CascoRegisterService(
             val details = ApplicationDetails(ApplicationDetails.Type.CASCO)
                 .apply {
                     this.price = price
-                    this.status = ApplicationDetails.Statuses.WAIT_PAYMENT
+                    this.status = ApplicationDetails.Statuses.IN_ANALYZE
                 }
 
-            val casco = input.toEntity(u, c, kbm)
+            val casco = input.toEntity(u, c, 1.0)
                 .apply { this.details = details }
 
+
             jpqlExecutor.JpqlQuery().openSession().flatMap { it.merge(casco) }
+                .map { casco ->
+                    casco.additionalPersons.addAll(input.additionalPerson.map { it.toEntity(casco) })
+                    casco
+                }.flatMap { casco ->
+                    jpqlExecutor.JpqlQuery().openSession().flatMap { it.merge(casco) }
+                }
         }.map(CascoApplicationEntity::setSerialNum).flatMap { e ->
             jpqlExecutor.JpqlQuery().openSession().flatMap { it.merge(e as CascoApplicationEntity) }
+        }.flatMap(this::wrap)
+    }
+
+
+    override fun findById(id: UUID): Uni<CascoOutput> {
+        val query = jpql {
+            selectDistinct(entity)
+                .from(entity)
+                .where(entity.path(CascoApplicationEntity::id).eq(id))
+        }
+
+        return jpqlExecutor.JpqlQuery().getResultData(query, PaginationInput.single()).flatMap(this::wrap)
+            .map { it.first() }
+    }
+
+
+    override fun wrap(entity: List<CascoApplicationEntity>): Uni<List<CascoOutput>> {
+        return entity.map { e ->
+            files.getObjectsByApplication(e.linkedDocs).map {
+                CascoOutput(e, it)
+            }
+        }.let {
+            Uni.combine().all().unis<HouseOutput>(it).with { it as List<CascoOutput> }
+        }
+    }
+
+
+    override fun wrap(entity: CascoApplicationEntity): Uni<CascoOutput> {
+        return files.getObjectsByApplication(entity.linkedDocs).map {
+            CascoOutput(entity, it)
         }
     }
 
     override fun processApplication(
         id: UUID,
-        obj: Nothing,
+        obj: CascoApplicationProcessInput,
         status: ApplicationDetails.Statuses
-    ): Uni<CascoApplicationEntity> = throw NotImplementedError()
+    ): Uni<CascoOutput> {
+        return jpqlExecutor.JpqlQuery().getQuery(
+            jpql {
+                select(entity)
+                    .from(entity)
+                    .where(entity.path(CascoApplicationEntity::id).eq(id))
+            }
+        ).flatMap { query -> query.singleResult }
+            .map { obj.processEntity(it) }
+            .flatMap {
+                it.details.status = status
+                jpqlExecutor.save(it)
+            }.flatMap(this::wrap)
+    }
 
 }

@@ -1,4 +1,4 @@
-package io.diplom.dto.person.input
+package io.diplom.dto.policy.input
 
 import io.diplom.models.UserEntity
 import io.diplom.models.application.policy.AbstractApplicationEntity

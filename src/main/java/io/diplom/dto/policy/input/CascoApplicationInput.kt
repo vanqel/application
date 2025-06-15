@@ -1,4 +1,4 @@
-package io.diplom.dto.person.input
+package io.diplom.dto.policy.input
 
 import io.diplom.models.UserEntity
 import io.diplom.models.application.policy.AbstractApplicationEntity
@@ -9,15 +9,15 @@ data class CascoApplicationInput(
     override val person: Long,
     override val periodic: AbstractApplicationEntity.Periodic,
     val num: String,
-    val car: Long
+    val car: Long,
+    val additionalPerson: List<PersonAdditionalInput>
 ) : AbstractApplicationInput<CascoApplicationEntity>() {
 
     fun toEntity(person: UserEntity, car: Car, kbm: Double): CascoApplicationEntity =
         CascoApplicationEntity(
             modelAuto = car,
             kbm = kbm,
-            numAuto = num,
+            numAuto = num
         ).apply { this.person = person }
-
 
 }

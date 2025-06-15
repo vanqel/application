@@ -13,10 +13,9 @@ import io.quarkus.security.runtime.QuarkusSecurityIdentity
 import io.quarkus.vertx.http.runtime.security.ChallengeData
 import io.quarkus.vertx.http.runtime.security.HttpAuthenticationMechanism
 import io.smallrye.mutiny.Uni
+import io.vertx.core.impl.logging.LoggerFactory
 import io.vertx.ext.web.RoutingContext
 import jakarta.enterprise.context.ApplicationScoped
-import org.jboss.logmanager.Logger
-import java.util.logging.Level
 
 /**
  * Провайдер аутентификации пользователя, выполняет проверку и аутентификацию пользователя в зависимости от [SecurityConfiguration]
@@ -27,7 +26,7 @@ class AuthenticationProvider(
 ) : HttpAuthenticationMechanism {
 
 
-    private val logger = Logger.getLogger("auth")
+    private val logger = LoggerFactory.getLogger("auth")
 
     /**
      * Авторизация пользователя в зависимости от конфигурации [SecurityConfiguration]
@@ -51,7 +50,7 @@ class AuthenticationProvider(
         val user = multiFromIterable(handlers.filters.mapNotNull { it.authenticate(context) })
             .flatMap {
                 it.onFailure {
-                    logger.log(Level.WARNING, "AuthFilters", it)
+                    logger.info("AuthFilters", it)
                     false
                 }.recoverWithItem(User.empty())
                     .toPublisher()

@@ -1,4 +1,4 @@
-package io.diplom.config
+package io.diplom.config.http
 
 import io.smallrye.config.ConfigMapping
 

@@ -1,7 +1,7 @@
 package io.diplom.repository.application.workers
 
 import com.linecorp.kotlinjdsl.dsl.jpql.jpql
-import io.diplom.config.JpqlEntityManager
+import io.diplom.config.jpql.JpqlEntityManager
 import io.diplom.models.application.policy.ApplicationDetails
 import jakarta.enterprise.context.ApplicationScoped
 

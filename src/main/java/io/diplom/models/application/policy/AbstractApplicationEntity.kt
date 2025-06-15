@@ -1,15 +1,20 @@
 package io.diplom.models.application.policy
 
 import io.diplom.models.UserEntity
+import io.diplom.models.application.additional.ApplicationAdditionalPersons
+import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
+import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.MappedSuperclass
+import jakarta.persistence.OneToMany
+import jakarta.persistence.OneToOne
 import java.time.LocalDateTime
 import java.util.*
 
@@ -38,8 +43,22 @@ sealed class AbstractApplicationEntity {
     @Column(name = "cost", nullable = false)
     var cost: Double? = null
 
-    @ManyToOne
+    @OneToOne(orphanRemoval = true, cascade = [CascadeType.ALL])
     var details: ApplicationDetails = ApplicationDetails(getType())
+
+    @OneToMany(orphanRemoval = true, cascade = [CascadeType.ALL])
+    @JoinColumn(
+        name = "application_id",
+        referencedColumnName = "id"
+    )
+    val linkedDocs : List<LinkFileApplicationEntity> = emptyList()
+
+    @OneToMany(fetch = FetchType.EAGER, orphanRemoval = true, cascade = [CascadeType.ALL])
+    @JoinColumn(
+        name = "application_id",
+        referencedColumnName = "id"
+    )
+    val additionalPersons: MutableList<ApplicationAdditionalPersons> = mutableListOf()
 
     abstract fun getType(): ApplicationDetails.Type
 

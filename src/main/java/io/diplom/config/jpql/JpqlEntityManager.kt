@@ -1,4 +1,4 @@
-package io.diplom.config
+package io.diplom.config.jpql
 
 import com.linecorp.kotlinjdsl.querymodel.jpql.select.SelectQuery
 import com.linecorp.kotlinjdsl.render.jpql.JpqlRenderContext
@@ -8,6 +8,7 @@ import io.diplom.extension.pagination
 import io.smallrye.mutiny.Uni
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.persistence.PersistenceContext
+import jakarta.transaction.Transactional
 import org.hibernate.reactive.mutiny.Mutiny
 
 /**
@@ -25,10 +26,11 @@ final class JpqlEntityManager(
     val entityManager: Mutiny.SessionFactory,
 ) {
 
+    fun <T : Any> save(obj: T): Uni<T> = entityManager.withTransaction { it.merge(obj) }
 
-    fun <T : Any> save(obj: T) = entityManager.openSession().flatMap { it.merge(obj) }
+    fun persist(obj: Any): Uni<Void> = entityManager.withTransaction { it.persist(obj) }
 
-    fun <T : Any> delete(obj: T) =
+    fun <T : Any> delete(obj: T): Uni<Boolean> =
         entityManager.openSession().flatMap { it.remove(obj) }
             .map { true }
             .onFailure()

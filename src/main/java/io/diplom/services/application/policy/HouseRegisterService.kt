@@ -1,23 +1,32 @@
 package io.diplom.services.application.policy
 
 import com.linecorp.kotlinjdsl.dsl.jpql.jpql
-import io.diplom.config.JpqlEntityManager
-import io.diplom.dto.person.input.HouseApplicationInput
-import io.diplom.dto.worker.input.HouseApplicationProcessInput
+import com.linecorp.kotlinjdsl.querymodel.jpql.entity.Entities.entity
+import io.diplom.config.jpql.JpqlEntityManager
+import io.diplom.config.jpql.PaginationInput
+import io.diplom.dto.file.FileOutput
+import io.diplom.dto.policy.input.HouseApplicationInput
+import io.diplom.dto.policy.output.HouseOutput
+import io.diplom.dto.worker.HouseApplicationProcessInput
 import io.diplom.models.application.policy.ApplicationDetails
-import io.diplom.models.application.policy.CascoApplicationEntity
 import io.diplom.models.application.policy.HouseApplicationEntity
 import io.diplom.repository.user.UserRepository
-import io.quarkus.security.identity.SecurityIdentity
+import io.diplom.services.application.files.AdditionalDocumentService
 import io.smallrye.mutiny.Uni
+import io.vertx.ext.web.FileUpload
 import jakarta.enterprise.context.ApplicationScoped
 import java.util.*
 
 @ApplicationScoped
 class HouseRegisterService(
     val jpqlExecutor: JpqlEntityManager,
-    val userRepository: UserRepository
-) : PolicyService<HouseApplicationEntity, HouseApplicationInput, HouseApplicationProcessInput> {
+    val userRepository: UserRepository,
+    val files: AdditionalDocumentService
+) : PolicyService<HouseApplicationEntity, HouseOutput, HouseApplicationInput, HouseApplicationProcessInput> {
+
+    companion object {
+        val entity = entity(HouseApplicationEntity::class)
+    }
 
     override fun policyForUser() =
         userRepository.getUser().flatMap { u ->
@@ -29,7 +38,7 @@ class HouseRegisterService(
                         .where(casco.path(HouseApplicationEntity::person).eq(u))
                 }
             ).flatMap { query -> query.resultList }
-        }
+        }.flatMap(this::wrap)
 
     override fun deleteApplication(id: UUID): Uni<Boolean> {
         return jpqlExecutor.JpqlQuery().getQuery(
@@ -45,12 +54,46 @@ class HouseRegisterService(
         }
     }
 
+
+    override fun lincDocs(
+        id: UUID,
+        docs: List<FileUpload>
+    ): Uni<List<FileOutput>> = files.putObjectsByApplication(id, docs)
+
+    override fun findById(id: UUID): Uni<HouseOutput> {
+        val query = jpql {
+            selectDistinct(entity)
+                .from(entity)
+                .where(entity.path(HouseApplicationEntity::id).eq(id))
+        }
+
+        return jpqlExecutor.JpqlQuery().getResultData(query, PaginationInput.single()).flatMap(this::wrap)
+            .map { it.first() }
+    }
+
+
+    override fun wrap(entity: List<HouseApplicationEntity>): Uni<List<HouseOutput>> {
+        return entity.map { e ->
+            files.getObjectsByApplication(e.linkedDocs).map {
+                HouseOutput(e, it)
+            }
+        }.let {
+            Uni.combine().all().unis<HouseOutput>(it).with { it as List<HouseOutput> }
+        }
+    }
+
+
+    override fun wrap(entity: HouseApplicationEntity): Uni<HouseOutput> {
+        return files.getObjectsByApplication(entity.linkedDocs).map {
+            HouseOutput(entity, it)
+        }
+    }
+
     override fun processApplication(
         id: UUID,
         obj: HouseApplicationProcessInput,
         status: ApplicationDetails.Statuses
-
-    ): Uni<HouseApplicationEntity> {
+    ): Uni<HouseOutput> {
         return jpqlExecutor.JpqlQuery().getQuery(
             jpql {
                 val house = entity(HouseApplicationEntity::class)
@@ -63,10 +106,10 @@ class HouseRegisterService(
             .flatMap {
                 it.details.status = status
                 jpqlExecutor.save(it)
-            }
+            }.flatMap(this::wrap)
     }
 
-    override fun registerApplication(input: HouseApplicationInput): Uni<HouseApplicationEntity> {
+    override fun registerApplication(input: HouseApplicationInput): Uni<HouseOutput> {
 
         return userRepository.getUser()
             .flatMap { u ->
@@ -74,7 +117,7 @@ class HouseRegisterService(
                 val details = ApplicationDetails(ApplicationDetails.Type.CASCO)
                     .apply {
                         this.price = price
-                        this.status = ApplicationDetails.Statuses.WAIT_PAYMENT
+                        this.status = ApplicationDetails.Statuses.IN_ANALYZE
                     }
 
                 val casco = input.toEntity(u)
@@ -85,7 +128,7 @@ class HouseRegisterService(
                 e.details.serial = "${e.details.type.name}-${(Math.random() * 500).toInt()}"
                 e.details.num = "0010${e.id}${(Math.random() * 89999 + 10000).toInt()}"
                 jpqlExecutor.JpqlQuery().openSession().flatMap { it.merge(e) }
-            }
+            }.flatMap(this::wrap)
     }
 
 

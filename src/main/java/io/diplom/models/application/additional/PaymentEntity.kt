@@ -1,6 +1,6 @@
-package io.diplom.models.application.payment
+package io.diplom.models.application.additional
 
-import io.diplom.dto.person.output.PaymentOutput
+import io.diplom.dto.policy.output.PaymentOutput
 import io.diplom.models.LongEntity
 import io.diplom.models.UserEntity
 import io.diplom.models.application.policy.ApplicationDetails

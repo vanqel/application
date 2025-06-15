@@ -1,7 +1,7 @@
 package io.diplom.services.dictionary
 
 import com.linecorp.kotlinjdsl.dsl.jpql.jpql
-import io.diplom.config.JpqlEntityManager
+import io.diplom.config.jpql.JpqlEntityManager
 import io.diplom.models.dictionary.Car
 import io.smallrye.mutiny.Uni
 import jakarta.enterprise.context.ApplicationScoped

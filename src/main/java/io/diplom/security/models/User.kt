@@ -1,6 +1,7 @@
 package io.diplom.security.models
 
 import java.security.Principal
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 
@@ -33,7 +34,7 @@ class User(
     /**
      * Признак блокировки пользователя
      */
-    var isBlocked: Boolean? = false,
+    var blocked: Boolean? = false,
 
     val roles: List<Authority>,
 
@@ -62,7 +63,7 @@ class User(
             "0",
             "0",
             "0",
-            PersonEntity(0, 0, "null", "null", "null", "null", "null", null),
+            PersonEntity(0, "0", "null", "null", LocalDate.now(), emptyList()),
             LocalDateTime.now(),
             false,
             listOf(Authority(AuthorityName.ADMIN)),

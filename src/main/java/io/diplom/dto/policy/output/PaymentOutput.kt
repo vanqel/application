@@ -1,7 +1,7 @@
-package io.diplom.dto.person.output
+package io.diplom.dto.policy.output
 
 import io.diplom.models.UserEntity
-import io.diplom.models.application.payment.PaymentEntity
+import io.diplom.models.application.additional.PaymentEntity
 import io.diplom.models.application.policy.ApplicationDetails
 
 class PaymentOutput(

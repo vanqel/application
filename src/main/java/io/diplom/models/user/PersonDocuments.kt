@@ -16,15 +16,6 @@ import java.time.LocalDate
 @Table(name = "documents")
 class PersonDocuments(
 
-    /**
-     * Данные пользователя
-     */
-    @JsonIgnore
-    @ManyToOne(fetch = FetchType.EAGER)
-    @Fetch(value = FetchMode.JOIN)
-    @JoinColumn(name = "person_id", nullable = false)
-    var personId: PersonEntity? = null,
-
     @Column(nullable = false)
     val serial: String? = null,
 
@@ -38,7 +29,16 @@ class PersonDocuments(
     val dateIssue: LocalDate? = null,
 
     @Column(nullable = false)
-    val type: DocType? = null
+    val type: DocType? = null,
+
+    @Column(nullable = false, name = "person_id")
+    var personId: Long? = null,
+
+    @Column(nullable = false)
+    var isApproved: Boolean = false,
+
+    @Column
+    var userApproved: Long? = null
 
 ) : LongEntity() {
     enum class DocType {

@@ -1,13 +1,13 @@
 package io.diplom.services.application.payment
 
 import com.linecorp.kotlinjdsl.dsl.jpql.jpql
-import io.diplom.config.JpqlEntityManager
-import io.diplom.config.RobokassaProps
+import io.diplom.config.jpql.JpqlEntityManager
+import io.diplom.config.http.RobokassaProps
 import io.diplom.dto.payment.PaymentInput
-import io.diplom.dto.person.output.PaymentOutput
+import io.diplom.dto.policy.output.PaymentOutput
 import io.diplom.exception.GeneralException
 import io.diplom.models.UserEntity
-import io.diplom.models.application.payment.PaymentEntity
+import io.diplom.models.application.additional.PaymentEntity
 import io.diplom.models.application.policy.ApplicationDetails
 import io.diplom.repository.application.payment.RoboKassaRepository
 import io.diplom.security.configurator.getUser
@@ -115,6 +115,8 @@ class RobokassaService(
     }
 
     fun success(body: PaymentInput) = succ(body.OutSum, body.InvId, body.SignatureValue)
+    fun failure(body: PaymentInput) = err(body.OutSum, body.InvId, body.SignatureValue)
+
     private fun succ(outSum: Double, invId: Int, signatureValue: String): Uni<PaymentOutput> =
         verify(outSum, invId, signatureValue)
             .let {

@@ -1,16 +1,15 @@
 package io.diplom.repository.application.payment
 
 import com.linecorp.kotlinjdsl.dsl.jpql.jpql
-import io.diplom.config.JpqlEntityManager
+import io.diplom.config.jpql.JpqlEntityManager
 import io.diplom.extension.flatten
-import io.diplom.models.application.payment.PaymentEntity
+import io.diplom.models.application.additional.PaymentEntity
 import jakarta.enterprise.context.ApplicationScoped
 
 @ApplicationScoped
 class RoboKassaRepository(
     val jpqlEntityManager: JpqlEntityManager
 ) {
-
 
     fun save(entity: PaymentEntity) =
         jpqlEntityManager.JpqlQuery().openSession().map { it.merge(entity) }.flatten()

@@ -1,6 +1,5 @@
-package io.diplom.dto.worker.input
+package io.diplom.dto.worker
 
-import io.diplom.models.application.payment.PaymentEntity
 import io.diplom.models.application.policy.ApplicationDetails
 
 data class StatusInput(

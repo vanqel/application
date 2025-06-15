@@ -70,6 +70,11 @@ dependencies {
 
     implementation 'io.quarkus:quarkus-smallrye-openapi'
 
+    implementation 'io.quarkiverse.minio:quarkus-minio:3.8.4'
+
+    implementation 'org.apache.logging.log4j:log4j-api-kotlin:1.4.0'
+
+
 }
 
 group 'io.diplom'

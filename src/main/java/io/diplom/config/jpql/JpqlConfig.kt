@@ -1,4 +1,4 @@
-package io.diplom.config
+package io.diplom.config.jpql
 
 import com.linecorp.kotlinjdsl.render.jpql.JpqlRenderContext
 import com.linecorp.kotlinjdsl.render.jpql.JpqlRenderer

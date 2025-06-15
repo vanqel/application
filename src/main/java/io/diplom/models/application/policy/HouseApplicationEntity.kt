@@ -35,6 +35,12 @@ class HouseApplicationEntity(
     @Column(name = "fias_address")
     var fiasAddress: String? = null,
 
+    /**
+     * ЕГРН Адресс
+     */
+    @Column(name = "egrn")
+    var egrn: String? = null,
+
     ) : AbstractApplicationEntity() {
 
     @Transient

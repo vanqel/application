@@ -54,3 +54,4 @@ class JwtAuthenticationFilter(
         const val PREFIX_VALUE = "Bearer "
     }
 }
+
