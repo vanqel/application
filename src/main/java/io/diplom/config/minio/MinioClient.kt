@@ -50,7 +50,7 @@ class MinioClient(
         }
 
         fun setUrl(host: String, port: String): Builder {
-            this.serverUrl = "$host:$port"
+            this.serverUrl = "$host:$port/"
             return this
         }
 
