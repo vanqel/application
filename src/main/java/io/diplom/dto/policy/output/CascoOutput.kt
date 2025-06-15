@@ -1,6 +1,7 @@
 package io.diplom.dto.policy.output
 
 import io.diplom.dto.file.FileOutput
+import io.diplom.models.UserEntity
 import io.diplom.models.application.additional.ApplicationAdditionalPersons
 import io.diplom.models.application.policy.ApplicationDetails
 import io.diplom.models.application.policy.CascoApplicationEntity
@@ -15,6 +16,7 @@ data class CascoOutput(
     val stsNum: String?,
     val techView: String?,
     val details: ApplicationDetails,
+    val person: UserEntity,
     val additionalPersons: List<ApplicationAdditionalPersons>,
     val documents: List<FileOutput>
 ) {
@@ -27,6 +29,7 @@ data class CascoOutput(
         stsNum = entity.stsNum,
         techView = entity.techView,
         details = entity.details,
+        person = entity.person!!,
         additionalPersons = entity.additionalPersons,
         documents = documents
     )

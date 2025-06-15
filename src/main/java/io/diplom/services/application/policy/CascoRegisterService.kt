@@ -9,12 +9,17 @@ import io.diplom.dto.policy.input.CascoApplicationInput
 import io.diplom.dto.policy.output.CascoOutput
 import io.diplom.dto.policy.output.HouseOutput
 import io.diplom.dto.worker.CascoApplicationProcessInput
+import io.diplom.exception.GeneralException
 import io.diplom.models.application.policy.ApplicationDetails
 import io.diplom.models.application.policy.CascoApplicationEntity
 import io.diplom.models.dictionary.Car
 import io.diplom.repository.user.UserRepository
+import io.diplom.security.configurator.getUser
+import io.diplom.security.models.AuthorityName
 import io.diplom.services.application.files.AdditionalDocumentService
+import io.quarkus.security.identity.SecurityIdentity
 import io.smallrye.mutiny.Uni
+import io.smallrye.mutiny.uni
 import io.vertx.ext.web.FileUpload
 import jakarta.enterprise.context.ApplicationScoped
 import java.util.*
@@ -23,7 +28,8 @@ import java.util.*
 class CascoRegisterService(
     val jpqlExecutor: JpqlEntityManager,
     val userRepository: UserRepository,
-    val files: AdditionalDocumentService
+    val files: AdditionalDocumentService,
+    val securityIdentity: SecurityIdentity
 ) : PolicyService<CascoApplicationEntity, CascoOutput, CascoApplicationInput, CascoApplicationProcessInput> {
 
 
@@ -93,15 +99,15 @@ class CascoRegisterService(
                 .apply { this.details = details }
 
 
-            jpqlExecutor.JpqlQuery().openSession().flatMap { it.merge(casco) }
+            jpqlExecutor.save(casco)
                 .map { casco ->
                     casco.additionalPersons.addAll(input.additionalPerson.map { it.toEntity(casco) })
                     casco
                 }.flatMap { casco ->
-                    jpqlExecutor.JpqlQuery().openSession().flatMap { it.merge(casco) }
+                    jpqlExecutor.save(casco)
                 }
         }.map(CascoApplicationEntity::setSerialNum).flatMap { e ->
-            jpqlExecutor.JpqlQuery().openSession().flatMap { it.merge(e as CascoApplicationEntity) }
+            jpqlExecutor.save(e as CascoApplicationEntity)
         }.flatMap(this::wrap)
     }
 
@@ -113,8 +119,15 @@ class CascoRegisterService(
                 .where(entity.path(CascoApplicationEntity::id).eq(id))
         }
 
-        return jpqlExecutor.JpqlQuery().getResultData(query, PaginationInput.single()).flatMap(this::wrap)
-            .map { it.first() }
+        val u = securityIdentity.getUser()
+
+        return jpqlExecutor.JpqlQuery().getResultData(query, PaginationInput.single()).flatMap {
+            val ent = it.first()
+            if (!securityIdentity.hasRole(AuthorityName.USER.name) || ent.person!!.id == u.id)
+                uni { ent }
+            else Uni.createFrom().failure(GeneralException("Нет прав на просмотр данного полиса"))
+        }.flatMap(this::wrap)
+
     }
 
 

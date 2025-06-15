@@ -28,7 +28,7 @@ class HouseRegisterService(
         val entity = entity(HouseApplicationEntity::class)
     }
 
-    override fun policyForUser() =
+    override fun policyForUser(): Uni<List<HouseOutput>> =
         userRepository.getUser().flatMap { u ->
             jpqlExecutor.JpqlQuery().getQuery(
                 jpql {
@@ -71,7 +71,6 @@ class HouseRegisterService(
             .map { it.first() }
     }
 
-
     override fun wrap(entity: List<HouseApplicationEntity>): Uni<List<HouseOutput>> {
         return entity.map { e ->
             files.getObjectsByApplication(e.linkedDocs).map {
@@ -81,7 +80,6 @@ class HouseRegisterService(
             Uni.combine().all().unis<HouseOutput>(it).with { it as List<HouseOutput> }
         }
     }
-
 
     override fun wrap(entity: HouseApplicationEntity): Uni<HouseOutput> {
         return files.getObjectsByApplication(entity.linkedDocs).map {
@@ -123,11 +121,11 @@ class HouseRegisterService(
                 val casco = input.toEntity(u)
                     .apply { this.details = details }
 
-                jpqlExecutor.JpqlQuery().openSession().flatMap { it.merge(casco) }
+                jpqlExecutor.save(casco)
             }.flatMap { e ->
                 e.details.serial = "${e.details.type.name}-${(Math.random() * 500).toInt()}"
                 e.details.num = "0010${e.id}${(Math.random() * 89999 + 10000).toInt()}"
-                jpqlExecutor.JpqlQuery().openSession().flatMap { it.merge(e) }
+                jpqlExecutor.save(e)
             }.flatMap(this::wrap)
     }
 
