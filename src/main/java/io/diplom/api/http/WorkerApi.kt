@@ -9,7 +9,7 @@ import jakarta.enterprise.context.ApplicationScoped
 import jakarta.ws.rs.core.MediaType
 
 @ApplicationScoped
-@RouteBase(path = "api/app/worker/")
+@RouteBase(path = "worker")
 class WorkerApi(
     val workerService: WorkerService
 ) {

@@ -10,7 +10,7 @@ import jakarta.enterprise.context.ApplicationScoped
 import jakarta.ws.rs.core.MediaType
 
 @ApplicationScoped
-@RouteBase(path = "api/app/payment/")
+@RouteBase(path = "payment")
 class PaymentApi(
     val robokassaService: RobokassaService
 ) {

@@ -14,7 +14,7 @@ import jakarta.ws.rs.core.MediaType
 import java.util.*
 
 @ApplicationScoped
-@RouteBase(path = "api/app/policy")
+@RouteBase(path = "policy")
 class CascoApi(
     val cascoRegisterService: CascoRegisterService
 ) {

@@ -41,7 +41,7 @@ class JwtAuthenticationFilter(
         }) ?: return@context Uni.createFrom().failure(AuthException())
 
 
-        return@context webClient.getAbs("$authUrl/api/user/me").putHeader(
+        return@context webClient.getAbs("$authUrl/user/me").putHeader(
             HttpHeaders.AUTHORIZATION, token
         ).send().map {
             it.bodyAsJson(User::class.java)

@@ -14,7 +14,7 @@ import jakarta.ws.rs.core.MediaType
 import java.util.*
 
 @ApplicationScoped
-@RouteBase(path = "api/app/house/")
+@RouteBase(path = "house")
 class HouseApi(
     val cascoRegisterService: HouseRegisterService
 ) {
