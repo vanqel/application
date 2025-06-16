@@ -35,8 +35,8 @@ class DictionaryApi (
         consumes = [MediaType.APPLICATION_JSON]
     )
     fun searchCarById(
-        @Param id : Long
-    ) = carService.findCarById(id)
+        @Param id : Long?
+    ) = carService.findCarById(id!!)
 
     /**
      * Поиск адреса по входным данным
