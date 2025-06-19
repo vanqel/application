@@ -45,13 +45,6 @@ class CascoApi(
         @Param cascoId: String,
         ex: RoutingExchange
     ): Uni<List<FileOutput>> {
-//        val c = ex.context().fileUploads()
-//        c.map {
-//            val a = File(it.uploadedFileName()).readBytes()
-//            a
-//        }
-//        ex.response().end()
-
         return cascoRegisterService.lincDocs(UUID.fromString(cascoId), ex.context().fileUploads())
     }
 
