@@ -38,7 +38,6 @@ sealed class AbstractApplicationEntity {
 
     @Column(name = "end_date", nullable = false)
     var endDate: LocalDateTime? = null
-        get() = periodic!!.calculate(startDate)
 
     @Column(name = "cost", nullable = false)
     var cost: Double? = null
@@ -60,6 +59,11 @@ sealed class AbstractApplicationEntity {
     )
     val additionalPersons: MutableList<ApplicationAdditionalPersons> = mutableListOf()
 
+
+    init {
+        endDate = endDate?: run { periodic?.calculate(startDate) }
+    }
+
     abstract fun getType(): ApplicationDetails.Type
 
     enum class Periodic(var months: Long) {
@@ -74,7 +78,7 @@ sealed class AbstractApplicationEntity {
 
     fun setSerialNum(): AbstractApplicationEntity {
         details.serial = "${details.type.name}-${(Math.random() * 500).toInt()}"
-        details.num = "0010${id}${(Math.random() * 89999 + 10000).toInt()}"
+        details.num = "0010${(Math.random() * 89999 + 10000).toInt()}"
         return this
     }
 }

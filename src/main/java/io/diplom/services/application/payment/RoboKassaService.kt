@@ -25,19 +25,9 @@ class RobokassaService(
     val securityIdentity: SecurityIdentity
 ) {
 
-
     fun generatePaymentLink(detailsId: Long): Uni<PaymentOutput> {
 
         val userSecurity = securityIdentity.getUser()
-
-        val user = jpqlEntityManager.JpqlQuery().getQuery(
-            jpql {
-                val userEntity = entity(UserEntity::class)
-                select(userEntity.toExpression())
-                    .from(userEntity)
-                    .where(userEntity.path(UserEntity::id).eq(userSecurity.id))
-            }
-        ).flatMap { query -> query.singleResult }
 
         val details = jpqlEntityManager.JpqlQuery().getQuery(
             jpql {
@@ -51,11 +41,9 @@ class RobokassaService(
         }
 
 
-        return Uni.combine().all().unis(user, details).asTuple()
-            .flatMap { turple ->
+        return details.flatMap { turple ->
 
-                val u = turple.item1
-                val p = turple.item2
+                val p = turple
 
                 if (p.status != ApplicationDetails.Statuses.WAIT_PAYMENT)
                     return@flatMap Uni.createFrom().failure(GeneralException("Заявка не одобрена для оплаты"))
@@ -64,7 +52,7 @@ class RobokassaService(
                 val signatureValue = generateSignatureValue(props.login, p.price!!, props.password1, invoiceID)
                 val url = UriBuilder.fromPath("https://auth.robokassa.ru/Merchant/Index.aspx")
                     .queryParam("MerchantLogin", props.login)
-                    .queryParam("OutSum", "${p.price}.00")
+                    .queryParam("OutSum", String.format("%.2f", p.price!!))
                     .queryParam("Description", "${p.type.description} ${p.serial}-${p.num}")
                     .queryParam("SignatureValue", signatureValue)
                     .queryParam("InvoiceID", invoiceID)
@@ -76,7 +64,7 @@ class RobokassaService(
                     invoiceId = invoiceID,
                     checkSumm = signatureValue,
                     applicationDetails = p,
-                    refer = u,
+                    refer = userSecurity.id,
                     cost = p.price!!
                 ).let {
                     repository.save(it)

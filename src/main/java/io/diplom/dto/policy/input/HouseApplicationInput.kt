@@ -22,7 +22,7 @@ data class HouseApplicationInput(
     val household: Double? = null,
 
     /** Стоимость полиса */
-    @Deprecated(message = "тот кто это увидет, забудьте, мне сказали я сделал)", level = DeprecationLevel.ERROR)
+    @Deprecated(message = "тот кто это увидет, забудьте, мне сказали я сделал)")
     val cost: Double? = null
 ) : AbstractApplicationInput<HouseApplicationEntity>() {
 
@@ -33,7 +33,12 @@ data class HouseApplicationInput(
             structuralElCost = structuralElCost,
             neighborsCost = neighborsCost,
             household = household,
-        ).apply { this.person = person }
+        ).apply {
+            this.person = person
+            this.cost = this@HouseApplicationInput.cost
+            this.periodic = this@HouseApplicationInput.periodic
+            this.endDate =  this@HouseApplicationInput.periodic.calculate(startDate)
+        }
 
 
 }

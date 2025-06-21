@@ -17,8 +17,7 @@ class PaymentApi(
 
     @Route(
         path = "/link",
-        methods = [Route.HttpMethod.POST],
-        consumes = [MediaType.APPLICATION_JSON]
+        methods = [Route.HttpMethod.GET],
     )
     fun link(
         @Param id: Long?

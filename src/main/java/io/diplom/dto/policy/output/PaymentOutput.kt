@@ -1,12 +1,11 @@
 package io.diplom.dto.policy.output
 
-import io.diplom.models.UserEntity
 import io.diplom.models.application.additional.PaymentEntity
 import io.diplom.models.application.policy.ApplicationDetails
 
 class PaymentOutput(
 
-    val refer: UserEntity,
+    val refer: Long,
 
     val applicationDetails: ApplicationDetails,
 

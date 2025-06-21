@@ -12,6 +12,7 @@ import io.diplom.security.configurator.getUser
 import io.diplom.services.files.MinioService
 import io.quarkus.security.identity.SecurityIdentity
 import io.smallrye.mutiny.Uni
+import io.smallrye.mutiny.uni
 import io.vertx.ext.web.FileUpload
 import jakarta.enterprise.context.ApplicationScoped
 import java.util.*
@@ -39,7 +40,8 @@ class AdditionalDocumentService(
             service.getObject(link.filename!!)
         }
 
-        return Uni.combine().all().unis<FileOutput>(unis).with { it as List<FileOutput> }
+        return if (unis.isEmpty()) uni { emptyList() }
+        else Uni.combine().all().unis<FileOutput>(unis).with { it as List<FileOutput> }
 
     }
 

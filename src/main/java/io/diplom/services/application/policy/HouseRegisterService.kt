@@ -112,19 +112,21 @@ class HouseRegisterService(
         return userRepository.getUser()
             .flatMap { u ->
 
-                val details = ApplicationDetails(ApplicationDetails.Type.CASCO)
+                val details = ApplicationDetails(ApplicationDetails.Type.HOUSE)
                     .apply {
-                        this.price = price
+                        this.price = input.cost
                         this.status = ApplicationDetails.Statuses.IN_ANALYZE
                     }
 
                 val casco = input.toEntity(u)
                     .apply { this.details = details }
 
+                casco.setSerialNum()
+
                 jpqlExecutor.save(casco)
             }.flatMap { e ->
                 e.details.serial = "${e.details.type.name}-${(Math.random() * 500).toInt()}"
-                e.details.num = "0010${e.id}${(Math.random() * 89999 + 10000).toInt()}"
+                e.details.num = "0010${(Math.random() * 89999 + 10000).toInt()}"
                 jpqlExecutor.save(e)
             }.flatMap(this::wrap)
     }

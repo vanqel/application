@@ -16,9 +16,8 @@ import jakarta.persistence.Table
 @Table(name = "payment")
 class PaymentEntity(
 
-    @ManyToOne
-    @JoinColumn(name = "refer", nullable = false)
-    val refer: UserEntity? = null,
+    @Column(name = "refer", nullable = false)
+    val refer: Long? = null,
 
     @Column(name = "checksumm", nullable = false)
     val checkSumm: String? = null,

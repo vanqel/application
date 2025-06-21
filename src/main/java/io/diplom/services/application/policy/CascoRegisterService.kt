@@ -98,6 +98,8 @@ class CascoRegisterService(
             val casco = input.toEntity(u, c, 1.0)
                 .apply { this.details = details }
 
+            casco.setSerialNum()
+
 
             jpqlExecutor.save(casco)
                 .map { casco ->

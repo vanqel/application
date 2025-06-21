@@ -18,6 +18,12 @@ data class CascoApplicationInput(
             modelAuto = car,
             kbm = kbm,
             numAuto = num
-        ).apply { this.person = person }
+        ).apply {
+            this.person = person
+
+            this.cost = -1.0
+            this.periodic = this@CascoApplicationInput.periodic
+            this.endDate = this@CascoApplicationInput.periodic.calculate(startDate)
+        }
 
 }
