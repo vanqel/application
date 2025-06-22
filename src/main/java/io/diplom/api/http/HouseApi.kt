@@ -25,7 +25,6 @@ class HouseApi(
     @Route(
         path = "/list",
         methods = [Route.HttpMethod.GET],
-        consumes = [MediaType.APPLICATION_JSON]
     )
     fun getPolicyForUser() = houseRegisterService.policyForUser()
 
@@ -42,8 +41,7 @@ class HouseApi(
 
     @Route(
         path = "/delete",
-        methods = [Route.HttpMethod.DELETE],
-        consumes = [MediaType.APPLICATION_JSON]
+        methods = [Route.HttpMethod.DELETE]
     )
     fun deletePolicy(
         @Param id: String?

@@ -14,7 +14,7 @@ import jakarta.ws.rs.core.MediaType
 import java.util.*
 
 @ApplicationScoped
-@RouteBase(path = "policy")
+@RouteBase(path = "casco")
 class CascoApi(
     val cascoRegisterService: CascoRegisterService
 ) {
@@ -22,7 +22,6 @@ class CascoApi(
     @Route(
         path = "/list",
         methods = [Route.HttpMethod.GET],
-        consumes = [MediaType.APPLICATION_JSON]
     )
     fun getPolicyForUser() = cascoRegisterService.policyForUser()
 
