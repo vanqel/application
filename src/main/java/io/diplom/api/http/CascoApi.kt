@@ -42,10 +42,10 @@ class CascoApi(
         consumes = [MediaType.MULTIPART_FORM_DATA],
     )
     fun addDocs(
-        @Param cascoId: String,
+        @Param id: String,
         ex: RoutingExchange
     ): Uni<List<FileOutput>> {
-        return cascoRegisterService.lincDocs(UUID.fromString(cascoId), ex.context().fileUploads())
+        return cascoRegisterService.lincDocs(UUID.fromString(id), ex.context().fileUploads())
     }
 
 

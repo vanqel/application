@@ -17,7 +17,6 @@ class WorkerApi(
     @Route(
         path = "/list",
         methods = [Route.HttpMethod.GET],
-        consumes = [MediaType.APPLICATION_JSON]
     )
     fun getListForWorker(
         @Param type: String?
@@ -27,7 +26,6 @@ class WorkerApi(
     @Route(
         path = "/take",
         methods = [Route.HttpMethod.POST],
-        consumes = [MediaType.APPLICATION_JSON]
     )
     fun takeApplicationForAnalyze(
         @Param detailsId: Int?

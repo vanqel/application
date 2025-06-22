@@ -1,5 +1,6 @@
 package io.diplom.models
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import io.diplom.models.user.PersonEntity
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -26,6 +27,7 @@ class UserEntity(
      * Пароль пользователя
      */
     @Column(name = "password")
+    @JsonIgnore
     var password: String? = null,
 
     /**

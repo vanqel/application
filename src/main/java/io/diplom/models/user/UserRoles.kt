@@ -1,5 +1,6 @@
 package io.diplom.models
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import io.diplom.security.models.AuthorityName
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -16,6 +17,7 @@ class UserRoles(
      * Пользователь
      */
     @ManyToOne
+    @JsonIgnore
     val uid: UserEntity? = null,
 
     /**

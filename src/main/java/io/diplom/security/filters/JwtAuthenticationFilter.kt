@@ -45,7 +45,10 @@ class JwtAuthenticationFilter(
             HttpHeaders.AUTHORIZATION, token
         ).send().map {
             it.bodyAsJson(User::class.java)
-        }.onFailure().recoverWithNull()
+        }.onFailure{
+            println(it)
+            true
+        }.recoverWithNull()
     }
 
     companion object {

@@ -6,6 +6,7 @@ import io.quarkus.vertx.web.Body
 import io.quarkus.vertx.web.Param
 import io.quarkus.vertx.web.Route
 import io.quarkus.vertx.web.RouteBase
+import io.quarkus.vertx.web.RoutingExchange
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.ws.rs.core.MediaType
 
@@ -30,8 +31,11 @@ class PaymentApi(
         consumes = [MediaType.APPLICATION_JSON]
     )
     fun success(
-        @Body body: PaymentInput
-    ) = robokassaService.success(body)
+        @Body body: PaymentInput,
+        ex: RoutingExchange
+    ) = robokassaService.success(body).map {
+        ex.context().redirect("/")
+    }
 
     @Route(
         path = "/failure",
@@ -39,8 +43,11 @@ class PaymentApi(
         consumes = [MediaType.APPLICATION_JSON]
     )
     fun failure(
-        @Body body: PaymentInput
-    ) = robokassaService.failure(body)
+        @Body body: PaymentInput,
+        ex: RoutingExchange
+    ) = robokassaService.failure(body).map {
+        ex.context().redirect("/")
+    }
 
 
 }

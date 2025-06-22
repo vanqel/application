@@ -1,5 +1,6 @@
 package io.diplom.api.http
 
+import io.diplom.dto.file.FileOutput
 import io.diplom.dto.policy.input.HouseApplicationInput
 import io.diplom.dto.worker.HouseApplicationProcessInput
 import io.diplom.models.application.policy.ApplicationDetails
@@ -8,6 +9,8 @@ import io.quarkus.vertx.web.Body
 import io.quarkus.vertx.web.Param
 import io.quarkus.vertx.web.Route
 import io.quarkus.vertx.web.RouteBase
+import io.quarkus.vertx.web.RoutingExchange
+import io.smallrye.mutiny.Uni
 import jakarta.annotation.security.RolesAllowed
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.ws.rs.core.MediaType
@@ -16,7 +19,7 @@ import java.util.*
 @ApplicationScoped
 @RouteBase(path = "house")
 class HouseApi(
-    val cascoRegisterService: HouseRegisterService
+    val houseRegisterService: HouseRegisterService
 ) {
 
     @Route(
@@ -24,7 +27,7 @@ class HouseApi(
         methods = [Route.HttpMethod.GET],
         consumes = [MediaType.APPLICATION_JSON]
     )
-    fun getPolicyForUser() = cascoRegisterService.policyForUser()
+    fun getPolicyForUser() = houseRegisterService.policyForUser()
 
 
     @Route(
@@ -34,7 +37,7 @@ class HouseApi(
     )
     fun registerPolicy(
         @Body body: HouseApplicationInput
-    ) = cascoRegisterService.registerApplication(body)
+    ) = houseRegisterService.registerApplication(body)
 
 
     @Route(
@@ -44,7 +47,7 @@ class HouseApi(
     )
     fun deletePolicy(
         @Param id: String?
-    ) = cascoRegisterService.deleteApplication(UUID.fromString(id!!))
+    ) = houseRegisterService.deleteApplication(UUID.fromString(id!!))
 
 
     @RolesAllowed("WORKER", "ADMIN")
@@ -57,6 +60,19 @@ class HouseApi(
         @Param id: String?,
         @Param status: String?,
         @Body body: HouseApplicationProcessInput
-    ) = cascoRegisterService.processApplication(UUID.fromString(id!!), body, ApplicationDetails.Statuses.valueOf(status!!))
+    ) = houseRegisterService.processApplication(UUID.fromString(id!!), body, ApplicationDetails.Statuses.valueOf(status!!))
+
+
+    @Route(
+        path = "/add-docs",
+        methods = [Route.HttpMethod.POST],
+        consumes = [MediaType.MULTIPART_FORM_DATA],
+    )
+    fun addDocs(
+        @Param id: String,
+        ex: RoutingExchange
+    ): Uni<List<FileOutput>> {
+        return houseRegisterService.lincDocs(UUID.fromString(id), ex.context().fileUploads())
+    }
 
 }
