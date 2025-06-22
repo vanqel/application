@@ -15,6 +15,7 @@ import io.diplom.services.application.files.AdditionalDocumentService
 import io.smallrye.mutiny.Uni
 import io.vertx.ext.web.FileUpload
 import jakarta.enterprise.context.ApplicationScoped
+import java.lang.ScopedValue.where
 import java.util.*
 
 @ApplicationScoped

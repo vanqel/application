@@ -42,10 +42,10 @@ sealed class AbstractApplicationEntity {
     @Column(name = "cost", nullable = false)
     var cost: Double? = null
 
-    @OneToOne(orphanRemoval = true, cascade = [CascadeType.ALL])
+    @OneToOne(fetch = FetchType.EAGER,orphanRemoval = true, cascade = [CascadeType.ALL])
     var details: ApplicationDetails = ApplicationDetails(getType())
 
-    @OneToMany(orphanRemoval = true, cascade = [CascadeType.ALL])
+    @OneToMany(fetch = FetchType.EAGER,orphanRemoval = true, cascade = [CascadeType.ALL])
     @JoinColumn(
         name = "application_id",
         referencedColumnName = "id"
