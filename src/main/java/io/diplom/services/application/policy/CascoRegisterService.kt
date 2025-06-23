@@ -46,7 +46,11 @@ class CascoRegisterService(
                         .from(casco)
                         .where(casco.path(CascoApplicationEntity::person).eq(u))
                 }
-            ).flatMap { query -> query.resultList }
+            ).flatMap { (session, query) ->
+                query.resultList.call { s ->
+                    session.close()
+                }
+            }
         }.flatMap(this::wrap)
 
     override fun deleteApplication(id: UUID): Uni<Boolean> {
@@ -58,7 +62,11 @@ class CascoRegisterService(
                     .from(casco)
                     .where(casco.path(CascoApplicationEntity::id).eq(id))
             }
-        ).flatMap { it.singleResult }.flatMap {
+        ).flatMap { (session, query) ->
+            query.singleResult.call { s ->
+                session.close()
+            }
+        }.flatMap {
             jpqlExecutor.delete(it)
         }
     }
@@ -80,7 +88,11 @@ class CascoRegisterService(
                     .from(car)
                     .where(car.path(Car::id).eq(input.car))
             }
-        ).flatMap { it.singleResult }
+        ).flatMap { (session, query) ->
+            query.singleResult.call { s ->
+                session.close()
+            }
+        }
 
         return Uni.combine().all().unis(user, car).asTuple().flatMap { tuple ->
 
@@ -161,8 +173,11 @@ class CascoRegisterService(
                     .from(entity)
                     .where(entity.path(CascoApplicationEntity::id).eq(id))
             }
-        ).flatMap { query -> query.singleResult }
-            .map { obj.processEntity(it) }
+        ).flatMap { (session, query) ->
+            query.singleResult.call { s ->
+                session.close()
+            }
+        }.map { obj.processEntity(it) }
             .flatMap {
                 it.details.status = status
                 jpqlExecutor.save(it)

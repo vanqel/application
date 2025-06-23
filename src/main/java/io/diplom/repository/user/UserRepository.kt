@@ -20,6 +20,10 @@ class UserRepository(
                 .from(userEntity)
                 .where(userEntity.path(UserEntity::id).eq(securityIdentity.getUser().id))
         }
-    ).flatMap { query -> query.singleResult }
+    ).flatMap { (session, query) ->
+        query.singleResult.call { s ->
+            session.close()
+        }
+    }
 
 }

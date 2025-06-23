@@ -8,7 +8,6 @@ import io.diplom.extension.pagination
 import io.smallrye.mutiny.Uni
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.persistence.PersistenceContext
-import jakarta.transaction.Transactional
 import org.hibernate.reactive.mutiny.Mutiny
 
 /**
@@ -31,7 +30,7 @@ final class JpqlEntityManager(
     fun persist(obj: Any): Uni<Void> = entityManager.withTransaction { it.persist(obj) }
 
     fun <T : Any> delete(obj: T): Uni<Boolean> =
-        entityManager.openSession().flatMap { it.remove(obj) }
+        entityManager.withTransaction { it.remove(obj) }
             .map { true }
             .onFailure()
             .recoverWithItem(false)
@@ -42,7 +41,7 @@ final class JpqlEntityManager(
 
         inline fun <reified T : Any> getQuery(
             query: SelectQuery<T>,
-        ): Uni<Mutiny.SelectionQuery<T>> {
+        ): Uni<Pair<Mutiny.Session, Mutiny.SelectionQuery<T>>> {
             val rendered = render.render(query, context)
             return getQuery(rendered)
         }
@@ -52,16 +51,14 @@ final class JpqlEntityManager(
          */
         inline fun <reified T : Any> getQuery(
             render: JpqlRendered,
-        ): Uni<Mutiny.SelectionQuery<T>> {
-            return entityManager.openSession().map { s ->
-                val callableQuery = s.createQuery(
-                    render.query, T::class.java
-                )
+        ) = entityManager.openSession().map { s ->
+            val callableQuery = s.createQuery(
+                render.query, T::class.java
+            )
 
-                callableQuery.apply { render.params.forEach { (name, value) -> setParameter(name, value) } }
-            }
-
+            s to callableQuery.apply { render.params.forEach { (name, value) -> setParameter(name, value) } }
         }
+
 
         inline fun <reified T : Any> getResultData(query: SelectQuery<T>, pagination: PaginationInput): Uni<List<T>> {
             val rendered = render.render(query, context)

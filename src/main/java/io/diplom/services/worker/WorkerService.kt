@@ -24,7 +24,11 @@ class WorkerService(
                 .from(details)
                 .where(details.path(ApplicationDetails::id).eq(detailsId.toLong()))
         }
-    ).flatMap { query -> query.singleResult }
+    ).flatMap { (session, query) ->
+        query.singleResult.call { s ->
+            session.close()
+        }
+    }
         .flatMap { details ->
             userRepository.getUser().flatMap {
                 details.worker = it
@@ -64,7 +68,11 @@ class WorkerService(
                 )
             )
     }.let {
-        jpqlExecutor.JpqlQuery().getQuery<T>(it).flatMap { query -> query.resultList }
+        jpqlExecutor.JpqlQuery().getQuery<T>(it).flatMap { (session, query) ->
+            query.resultList.call { s ->
+                session.close()
+            }
+        }
     }
 
 }

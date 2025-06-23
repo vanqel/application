@@ -15,7 +15,6 @@ import io.diplom.services.application.files.AdditionalDocumentService
 import io.smallrye.mutiny.Uni
 import io.vertx.ext.web.FileUpload
 import jakarta.enterprise.context.ApplicationScoped
-import java.lang.ScopedValue.where
 import java.util.*
 
 @ApplicationScoped
@@ -38,7 +37,11 @@ class HouseRegisterService(
                         .from(casco)
                         .where(casco.path(HouseApplicationEntity::person).eq(u))
                 }
-            ).flatMap { query -> query.resultList }
+            ).flatMap { (session, query) ->
+                query.resultList.call { s ->
+                    session.close()
+                }
+            }
         }.flatMap(this::wrap)
 
     override fun deleteApplication(id: UUID): Uni<Boolean> {
@@ -50,7 +53,11 @@ class HouseRegisterService(
                     .from(house)
                     .where(house.path(HouseApplicationEntity::id).eq(id))
             }
-        ).flatMap { it.singleResult }.flatMap {
+        ).flatMap { (session, query) ->
+            query.singleResult.call { s ->
+                session.close()
+            }
+        }.flatMap {
             jpqlExecutor.delete(it)
         }
     }
@@ -100,7 +107,11 @@ class HouseRegisterService(
                     .from(house)
                     .where(house.path(HouseApplicationEntity::id).eq(id))
             }
-        ).flatMap { query -> query.singleResult }
+        ).flatMap { (session, query) ->
+            query.singleResult.call { s ->
+                session.close()
+            }
+        }
             .map { obj.processEntity(it) }
             .flatMap {
                 it.details.status = status

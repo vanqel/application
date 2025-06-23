@@ -21,7 +21,11 @@ class RoboKassaRepository(
                 .from(payment)
                 .where(payment.path(PaymentEntity::invoiceId).eq(invId))
         }
-    ).flatMap { it.singleResult }
+    ).flatMap { (session, query) ->
+        query.singleResult.call { s ->
+            session.close()
+        }
+    }
 
 
     fun ok(invId: Int) = find(invId).flatMap { obj ->

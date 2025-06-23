@@ -18,11 +18,14 @@ class WorkerRepository(
                 .from(details)
                 .where(details.path(ApplicationDetails::id).eq(detailsId))
         }
-    ).flatMap { query -> query.singleResult }
-        .flatMap { d ->
-            d.status = ApplicationDetails.Statuses.IN_ANALYZE
-            jpqlEntityManager.save(d)
+    ).flatMap { (session, query) ->
+        query.singleResult.call { s ->
+            session.close()
         }
+    }.flatMap { d ->
+        d.status = ApplicationDetails.Statuses.IN_ANALYZE
+        jpqlEntityManager.save(d)
+    }
 
 
     fun getListForWorker(type: ApplicationDetails.Type) =
@@ -42,5 +45,7 @@ class WorkerRepository(
                         )
                     )
             }
-        ).flatMap { query -> query.resultList }
+        ).flatMap { (session, query) -> query.resultList.call { s ->
+            session.close()
+        } }
 }

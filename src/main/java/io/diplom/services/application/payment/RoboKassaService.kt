@@ -1,12 +1,11 @@
 package io.diplom.services.application.payment
 
 import com.linecorp.kotlinjdsl.dsl.jpql.jpql
-import io.diplom.config.jpql.JpqlEntityManager
 import io.diplom.config.http.RobokassaProps
+import io.diplom.config.jpql.JpqlEntityManager
 import io.diplom.dto.payment.PaymentInput
 import io.diplom.dto.policy.output.PaymentOutput
 import io.diplom.exception.GeneralException
-import io.diplom.models.UserEntity
 import io.diplom.models.application.additional.PaymentEntity
 import io.diplom.models.application.policy.ApplicationDetails
 import io.diplom.repository.application.payment.RoboKassaRepository
@@ -36,40 +35,42 @@ class RobokassaService(
                     .from(application)
                     .where(application.path(ApplicationDetails::id).eq(detailsId))
             }
-        ).flatMap {
-            it.singleResult
+        ).flatMap { (session, query) ->
+            query.singleResult.call { s ->
+                session.close()
+            }
         }
 
 
         return details.flatMap { turple ->
 
-                val p = turple
+            val p = turple
 
-                if (p.status != ApplicationDetails.Statuses.WAIT_PAYMENT)
-                    return@flatMap Uni.createFrom().failure(GeneralException("Заявка не одобрена для оплаты"))
+            if (p.status != ApplicationDetails.Statuses.WAIT_PAYMENT)
+                return@flatMap Uni.createFrom().failure(GeneralException("Заявка не одобрена для оплаты"))
 
-                val invoiceID = (Math.random() * 100000 + 1).toInt()
-                val signatureValue = generateSignatureValue(props.login, p.price!!, props.password1, invoiceID)
-                val url = UriBuilder.fromPath("https://auth.robokassa.ru/Merchant/Index.aspx")
-                    .queryParam("MerchantLogin", props.login)
-                    .queryParam("OutSum", String.format("%.2f", p.price!!))
-                    .queryParam("Description", "${p.type.description} ${p.serial}-${p.num}")
-                    .queryParam("SignatureValue", signatureValue)
-                    .queryParam("InvoiceID", invoiceID)
-                    .queryParam("IsTest", props.isTest)
-                    .build().toURL().toString()
+            val invoiceID = (Math.random() * 100000 + 1).toInt()
+            val signatureValue = generateSignatureValue(props.login, p.price!!, props.password1, invoiceID)
+            val url = UriBuilder.fromPath("https://auth.robokassa.ru/Merchant/Index.aspx")
+                .queryParam("MerchantLogin", props.login)
+                .queryParam("OutSum", String.format("%.2f", p.price!!))
+                .queryParam("Description", "${p.type.description} ${p.serial}-${p.num}")
+                .queryParam("SignatureValue", signatureValue)
+                .queryParam("InvoiceID", invoiceID)
+                .queryParam("IsTest", props.isTest)
+                .build().toURL().toString()
 
-                PaymentEntity(
-                    url = url,
-                    invoiceId = invoiceID,
-                    checkSumm = signatureValue,
-                    applicationDetails = p,
-                    refer = userSecurity.id,
-                    cost = p.price!!
-                ).let {
-                    repository.save(it)
-                }
-            }.map { it.toDTO() }
+            PaymentEntity(
+                url = url,
+                invoiceId = invoiceID,
+                checkSumm = signatureValue,
+                applicationDetails = p,
+                refer = userSecurity.id,
+                cost = p.price!!
+            ).let {
+                repository.save(it)
+            }
+        }.map { it.toDTO() }
     }
 
     private fun generateSignatureValue(
