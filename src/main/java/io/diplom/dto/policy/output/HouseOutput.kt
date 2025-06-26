@@ -1,6 +1,7 @@
 package io.diplom.dto.policy.output
 
 import io.diplom.dto.file.FileOutput
+import io.diplom.models.UserEntity
 import io.diplom.models.application.additional.ApplicationAdditionalPersons
 import io.diplom.models.application.policy.ApplicationDetails
 import io.diplom.models.application.policy.HouseApplicationEntity
@@ -15,6 +16,7 @@ data class HouseOutput(
     var monthCost: Double?,
     var fiasAddress: String?,
     var egrn: String?,
+    var person: UserEntity?,
     val details: ApplicationDetails,
     val additionalPersons: List<ApplicationAdditionalPersons>,
     val documents: List<FileOutput>
@@ -29,6 +31,7 @@ data class HouseOutput(
         monthCost = entity.monthCost,
         fiasAddress = entity.fiasAddress,
         egrn = entity.egrn,
+        person = entity.person,
         details = entity.details,
         additionalPersons = entity.additionalPersons,
         documents = documents

@@ -151,7 +151,7 @@ class CascoRegisterService(
                 CascoOutput(e, it)
             }
         }.let {
-            Uni.combine().all().unis<HouseOutput>(it).with { it as List<CascoOutput> }
+            Uni.combine().all().unis<CascoOutput>(it).with { it as List<CascoOutput> }
         }
     }
 
