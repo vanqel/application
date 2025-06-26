@@ -81,6 +81,7 @@ class AdditionalDocumentService(
 
         }
 
+        if (unis.isEmpty()) return uni { emptyList() }
         return Uni.combine().all().unis<FileOutput>(unis).with { it as List<FileOutput> }
     }
 

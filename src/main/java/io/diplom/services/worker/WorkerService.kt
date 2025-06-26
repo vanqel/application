@@ -8,13 +8,18 @@ import io.diplom.models.application.policy.ApplicationDetails
 import io.diplom.models.application.policy.CascoApplicationEntity
 import io.diplom.models.application.policy.HouseApplicationEntity
 import io.diplom.repository.user.UserRepository
+import io.diplom.services.application.policy.CascoRegisterService
+import io.diplom.services.application.policy.HouseRegisterService
+import io.smallrye.mutiny.Uni
 import jakarta.enterprise.context.ApplicationScoped
 import kotlin.reflect.KClass
 
 @ApplicationScoped
 class WorkerService(
     val jpqlExecutor: JpqlEntityManager,
-    val userRepository: UserRepository
+    val userRepository: UserRepository,
+    val houseRegisterService: HouseRegisterService,
+    val cascoRegisterService: CascoRegisterService
 ) {
 
     fun takeApplicationForAnalyze(detailsId: Int) = jpqlExecutor.JpqlQuery().getQuery(
@@ -38,11 +43,18 @@ class WorkerService(
         }
 
 
-    fun getListForWorker(type: ApplicationDetails.Type) =
+    fun getListForWorker(type: ApplicationDetails.Type): Uni<out List<Any>> =
         when (type) {
             ApplicationDetails.Type.NOTHING -> throw GeneralException("Ошибка")
-            ApplicationDetails.Type.CASCO -> getQuery(CascoApplicationEntity::class, ApplicationDetails.Type.CASCO)
-            ApplicationDetails.Type.HOUSE -> getQuery(HouseApplicationEntity::class, ApplicationDetails.Type.HOUSE)
+            ApplicationDetails.Type.CASCO -> getQuery(
+                CascoApplicationEntity::class,
+                ApplicationDetails.Type.CASCO
+            ).flatMap { cascoRegisterService.wrap(it) }
+
+            ApplicationDetails.Type.HOUSE -> getQuery(
+                HouseApplicationEntity::class,
+                ApplicationDetails.Type.HOUSE
+            ).flatMap { houseRegisterService.wrap(it) }
         }
 
     private inline fun <reified T : AbstractApplicationEntity> getQuery(

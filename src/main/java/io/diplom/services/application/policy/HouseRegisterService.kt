@@ -13,6 +13,7 @@ import io.diplom.models.application.policy.HouseApplicationEntity
 import io.diplom.repository.user.UserRepository
 import io.diplom.services.application.files.AdditionalDocumentService
 import io.smallrye.mutiny.Uni
+import io.smallrye.mutiny.uni
 import io.vertx.ext.web.FileUpload
 import jakarta.enterprise.context.ApplicationScoped
 import java.util.*
@@ -85,7 +86,9 @@ class HouseRegisterService(
                 HouseOutput(e, it)
             }
         }.let {
-            Uni.combine().all().unis<HouseOutput>(it).with { it as List<HouseOutput> }
+
+            if (it.isEmpty()) uni { entity.map { HouseOutput(it, emptyList()) } }
+            else Uni.combine().all().unis<HouseOutput>(it).with { it as List<HouseOutput> }
         }
     }
 
