@@ -5,6 +5,7 @@ import io.diplom.models.UserEntity
 import io.diplom.models.application.additional.ApplicationAdditionalPersons
 import io.diplom.models.application.policy.ApplicationDetails
 import io.diplom.models.application.policy.HouseApplicationEntity
+import java.time.LocalDateTime
 import java.util.*
 
 data class HouseOutput(
@@ -19,7 +20,9 @@ data class HouseOutput(
     var person: UserEntity?,
     val details: ApplicationDetails,
     val additionalPersons: List<ApplicationAdditionalPersons>,
-    val documents: List<FileOutput>
+    val documents: List<FileOutput>,
+    var startDate: LocalDateTime,
+    var endDate: LocalDateTime?,
 ) {
 
     constructor(entity: HouseApplicationEntity, documents: List<FileOutput>) : this(
@@ -34,6 +37,8 @@ data class HouseOutput(
         person = entity.person,
         details = entity.details,
         additionalPersons = entity.additionalPersons,
-        documents = documents
+        documents = documents,
+        startDate = entity.startDate,
+        endDate = entity.endDate
     )
 }
