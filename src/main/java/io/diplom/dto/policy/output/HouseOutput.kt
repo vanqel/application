@@ -23,6 +23,7 @@ data class HouseOutput(
     val documents: List<FileOutput>,
     var startDate: LocalDateTime,
     var endDate: LocalDateTime?,
+    var cost: Double?
 ) {
 
     constructor(entity: HouseApplicationEntity, documents: List<FileOutput>) : this(
@@ -39,6 +40,7 @@ data class HouseOutput(
         additionalPersons = entity.additionalPersons,
         documents = documents,
         startDate = entity.startDate,
-        endDate = entity.endDate
+        endDate = entity.endDate,
+        cost = entity.cost
     )
 }
