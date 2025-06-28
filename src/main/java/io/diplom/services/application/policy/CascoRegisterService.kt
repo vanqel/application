@@ -67,8 +67,8 @@ class CascoRegisterService(
                 session.close()
             }
         }.flatMap {
-            jpqlExecutor.delete(it)
-        }
+            jpqlExecutor.delete<CascoApplicationEntity>(it.id!!)
+        }.map { true }
     }
 
     override fun lincDocs(

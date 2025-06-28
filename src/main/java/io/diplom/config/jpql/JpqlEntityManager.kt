@@ -1,5 +1,6 @@
 package io.diplom.config.jpql
 
+import com.fasterxml.jackson.core.type.TypeReference
 import com.linecorp.kotlinjdsl.querymodel.jpql.select.SelectQuery
 import com.linecorp.kotlinjdsl.render.jpql.JpqlRenderContext
 import com.linecorp.kotlinjdsl.render.jpql.JpqlRendered
@@ -9,6 +10,7 @@ import io.smallrye.mutiny.Uni
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.persistence.PersistenceContext
 import org.hibernate.reactive.mutiny.Mutiny
+import java.util.*
 
 /**
  * DAO для работы с запросами, которые были созданы с помощью собственной библиотеки на основе JPQL
@@ -32,8 +34,15 @@ final class JpqlEntityManager(
     fun <T : Any> delete(obj: T): Uni<Boolean> =
         entityManager.withTransaction { it.remove(obj) }
             .map { true }
-            .onFailure()
-            .recoverWithItem(false)
+
+
+    inline fun <reified T : Any> delete(id: UUID): Uni<Int> =
+        entityManager.withTransaction {
+            it.createMutationQuery(
+                "DELETE FROM ${T::class.java.simpleName} WHERE id = :id"
+            ).setParameter("id", id).executeUpdate()
+        }
+
 
     inner class JpqlQuery {
 

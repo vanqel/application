@@ -47,7 +47,6 @@ class HouseRegisterService(
 
     override fun deleteApplication(id: UUID): Uni<Boolean> {
         return jpqlExecutor.JpqlQuery().getQuery(
-
             jpql {
                 val house = entity(HouseApplicationEntity::class)
                 select(house.toExpression())
@@ -59,8 +58,8 @@ class HouseRegisterService(
                 session.close()
             }
         }.flatMap {
-            jpqlExecutor.delete(it)
-        }
+            jpqlExecutor.delete<HouseApplicationEntity>(it.id!!)
+        }.map { true }
     }
 
 
