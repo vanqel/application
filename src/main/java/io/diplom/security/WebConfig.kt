@@ -28,6 +28,7 @@ class WebConfig(
         SecurityConfiguration.Builder
             .addFilter(jwtAuthenticationFilter, FilterType.USER)
             .addFilter(intAuthenticationFilter, FilterType.INTEGRATION)
+            .permitAll("/payment/success", "/payment/failure")
             .anyRequestAuthorized()
             .build()
 

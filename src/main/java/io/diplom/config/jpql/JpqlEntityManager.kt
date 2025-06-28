@@ -39,6 +39,9 @@ final class JpqlEntityManager(
 
         fun openSession(): Uni<Mutiny.Session> = entityManager.openSession()
 
+        fun <T : Any> withTransaction(query: (Mutiny.Session) -> Uni<T>): Uni<T> =
+            entityManager.withTransaction { session -> query.invoke(session) }
+
         inline fun <reified T : Any> getQuery(
             query: SelectQuery<T>,
         ): Uni<Pair<Mutiny.Session, Mutiny.SelectionQuery<T>>> {

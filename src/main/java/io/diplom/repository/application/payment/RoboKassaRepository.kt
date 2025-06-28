@@ -12,7 +12,9 @@ class RoboKassaRepository(
 ) {
 
     fun save(entity: PaymentEntity) =
-        jpqlEntityManager.JpqlQuery().openSession().map { it.merge(entity) }.flatten()
+        jpqlEntityManager.JpqlQuery().withTransaction { s ->
+            s.merge(entity)
+        }
 
     fun find(invId: Int) = jpqlEntityManager.JpqlQuery().getQuery(
         jpql {
@@ -30,12 +32,12 @@ class RoboKassaRepository(
 
     fun ok(invId: Int) = find(invId).flatMap { obj ->
         obj.status = PaymentEntity.Status.OK
-        jpqlEntityManager.JpqlQuery().openSession().map { it.merge(obj) }
-    }.flatten()
+        jpqlEntityManager.JpqlQuery().withTransaction { it.merge(obj) }
+    }
 
 
     fun err(invId: Int) = find(invId).flatMap { obj ->
         obj.status = PaymentEntity.Status.ERR
-        jpqlEntityManager.JpqlQuery().openSession().map { it.merge(obj) }
-    }.flatten()
+        jpqlEntityManager.JpqlQuery().withTransaction { it.merge(obj) }
+    }
 }

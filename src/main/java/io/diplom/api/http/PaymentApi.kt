@@ -2,11 +2,11 @@ package io.diplom.api.http
 
 import io.diplom.dto.payment.PaymentInput
 import io.diplom.services.application.payment.RobokassaService
-import io.quarkus.vertx.web.Body
 import io.quarkus.vertx.web.Param
 import io.quarkus.vertx.web.Route
 import io.quarkus.vertx.web.RouteBase
 import io.quarkus.vertx.web.RoutingExchange
+import io.vertx.core.json.JsonObject
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.ws.rs.core.MediaType
 
@@ -25,29 +25,39 @@ class PaymentApi(
     ) = robokassaService.generatePaymentLink(id!!)
 
 
+    private fun wrapBodyToPaymentInput(
+        ex: RoutingExchange
+    ): PaymentInput {
+        val responseMap = mutableMapOf<String, Any>()
+        ex.context().body().asString().let {
+            it.split("&")
+                .forEach {
+                    it.split("=")
+                        .let { responseMap.put(it[0], it[1]) }
+                }
+        }
+
+        val obj = JsonObject.mapFrom(responseMap)
+        return obj.mapTo(PaymentInput::class.java)
+    }
+
     @Route(
         path = "/success",
         methods = [Route.HttpMethod.POST],
-        consumes = [MediaType.APPLICATION_JSON]
+        consumes = [MediaType.APPLICATION_FORM_URLENCODED]
     )
     fun success(
-        @Body body: PaymentInput,
         ex: RoutingExchange
-    ) = robokassaService.success(body).map {
-        ex.context().redirect("/")
-    }
+    ) = robokassaService.success(wrapBodyToPaymentInput(ex))
 
     @Route(
         path = "/failure",
         methods = [Route.HttpMethod.POST],
-        consumes = [MediaType.APPLICATION_JSON]
+        consumes = [MediaType.APPLICATION_FORM_URLENCODED]
     )
     fun failure(
-        @Body body: PaymentInput,
         ex: RoutingExchange
-    ) = robokassaService.failure(body).map {
-        ex.context().redirect("/")
-    }
+    ) = robokassaService.failure(wrapBodyToPaymentInput(ex))
 
 
 }

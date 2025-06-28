@@ -103,10 +103,10 @@ class RobokassaService(
         return invId
     }
 
-    fun success(body: PaymentInput) = succ(body.OutSum, body.InvId, body.SignatureValue)
-    fun failure(body: PaymentInput) = err(body.OutSum, body.InvId, body.SignatureValue)
+    fun success(body: PaymentInput) = succ(body.OutSum.toString().toDouble(), body.InvId, body.SignatureValue)
+    fun failure(body: PaymentInput) = err(body.OutSum.toString().toDouble(), body.InvId, body.SignatureValue)
 
-    private fun succ(outSum: Double, invId: Int, signatureValue: String): Uni<PaymentOutput> =
+    private fun succ(outSum: Double, invId: Int, signatureValue: String): Uni<ApplicationDetails> =
         verify(outSum, invId, signatureValue)
             .let {
                 repository.ok(invId)
@@ -117,11 +117,15 @@ class RobokassaService(
             }
             .flatMap {
                 repository.save(it)
-            }.map {
-                it.toDTO()
+            }.flatMap { p ->
+                val details = p.applicationDetails!!
+                jpqlEntityManager.JpqlQuery().withTransaction {
+                    details.status = ApplicationDetails.Statuses.SUCCESS
+                    it.merge(details)
+                }
             }
 
-    fun err(outSum: Double, invId: Int, signatureValue: String): Uni<PaymentOutput> =
+    fun err(outSum: Double, invId: Int, signatureValue: String): Uni<ApplicationDetails> =
         verify(outSum, invId, signatureValue)
             .let {
                 repository.err(invId)
@@ -132,8 +136,12 @@ class RobokassaService(
             }
             .flatMap {
                 repository.save(it)
-            }.map {
-                it.toDTO()
+            }.flatMap { p ->
+                val details = p.applicationDetails!!
+                jpqlEntityManager.JpqlQuery().withTransaction {
+                    details.status = ApplicationDetails.Statuses.WAIT_PAYMENT
+                    it.merge(details)
+                }
             }
 
 
